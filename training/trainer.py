@@ -1,5 +1,7 @@
 from tqdm import tqdm
 import torch
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+import pandas as pd
 
 
 class trainer():
@@ -40,5 +42,24 @@ class trainer():
 				total_corrects+=(predicted==batch['labels'].to(device)).sum().item()
 				total_loss+=loss
 		return total_loss/total_samples, total_corrects/total_samples
+	def evaluate(self, model, test_loader, device):
+		model.eval()
+		predicted=[]
+		true_labels=[]
+		with torch.no_grad():
+			for batch in test_loader:
+				outputs_logits=model(batch['numericalized_encode'].to(device))
+				_, predict=torch.max(outputs_logits, 1)
+				predicted.extend(predict.cpu().numpy())
+				true_labels.extend(batch['labels'].to(device).cpu().numpy())
+		result = classification_report(predicted, true_labels, output_dict=True)
+		result_df = pd.DataFrame(result).transpose().reset_index()
+		return {
+			'accuracy': accuracy_score(predicted, true_labels),
+			'precision': result_df[result_df['index']=="weighted avg"]['precision'].values[0],
+			'recall': result_df[result_df['index']=="weighted avg"]['recall'].values[0],
+			'f1-score': result_df[result_df['index']=="weighted avg"]['f1-score'].values[0],
+			'confusion_matrix': confusion_matrix(true_labels, predicted)
+		}
 if __name__=="__main__":
 	pass
