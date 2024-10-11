@@ -15,11 +15,14 @@ def load_vocab_from_file(file_path):
 	return vocab
 
 class Custom_Dataset(Dataset):
-	def __init__(self, sentences, labels, file_path=None, is_save_vocab=False):
+	def __init__(self, sentences, labels, file_path=None, is_save_vocab=False, max_length=None):
 		self.sentences=sentences
 		self.labels=labels
 		self.tokenized=tokenize(self.sentences)
-		self.max_length=int(np.percentile([len(seq) for seq in self.tokenized], 95))
+		if max_length is None:
+			self.max_length=int(np.percentile([len(seq) for seq in self.tokenized], 95))
+		elif max_length is not None:
+			self.max_length=max_length
 		if file_path is None:
 			self.vocab=build_vocab_from_iterator(yield_token(self.tokenized), specials=["<unk>"])
 			self.vocab.set_default_index(self.vocab["<unk>"])
