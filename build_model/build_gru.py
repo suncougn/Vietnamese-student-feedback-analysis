@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class GRU(nn.Module):
-	def __init__(self, vocab_size, embedding_dim, gru_units=64, num_layers=1, dropout=0.2, activation=None, batch_normalization=False, bidirectional=False):
+	def __init__(self, vocab_size, embedding_dim, gru_units=64, num_layers=1, dropout=0.2, activation=None, batch_normalization=False, bidirectional=False, output_dim=3):
 		super(GRU, self).__init__()
 		self.embedding=nn.Embedding(vocab_size, embedding_dim)
 		self.gru=nn.GRU(embedding_dim, gru_units, num_layers, batch_first=True, dropout=dropout, bidirectional=bidirectional)
@@ -16,7 +16,7 @@ class GRU(nn.Module):
 		self.bn=nn.BatchNorm1d(gru_units) if batch_normalization else nn.Identity()
 		self.activation=activation
 		self.dropout=nn.Dropout(dropout)
-		self.dense2=nn.Linear(gru_units,3)
+		self.dense2=nn.Linear(gru_units,output_dim)
 	def forward(self, x):
 		x=self.embedding(x)
 		x, _ = self.gru(x)
